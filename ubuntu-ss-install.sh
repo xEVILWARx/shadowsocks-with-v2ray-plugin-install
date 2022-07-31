@@ -96,6 +96,7 @@ install_ss(){
         echo "\033[1;32mShadowsocks-libev already installed, skip.\033[0m"
     else
         apt install shadowsocks-libev -y
+        systemctl stop shadowsocks-libev.service
         systemctl disable shadowsocks-libev.service
         if [ ! -f /usr/local/bin/ss-server ];then
             echo "\033[1;31mFailed to install shadowsocks-libev.\033[0m"
