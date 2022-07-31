@@ -82,19 +82,7 @@ install_mbedtls(){
     if [ -f /usr/lib/libmbedtls.a ];then
         echo "\033[1;32mMbedTLS already installed, skip.\033[0m"
     else
-        if [ ! -f mbedtls-$MBEDTLS_VER-gpl.tgz ];then
-            wget https://tls.mbed.org/download/mbedtls-$MBEDTLS_VER-gpl.tgz
-        fi
-        tar xf mbedtls-$MBEDTLS_VER-gpl.tgz
-        cd mbedtls-$MBEDTLS_VER
-        make SHARED=1 CFLAGS=-fPIC
-        make DESTDIR=/usr install
-        cd ..
-        ldconfig
-        if [ ! -f /usr/lib/libmbedtls.a ];then
-            echo "\033[1;31mFailed to install MbedTLS.\033[0m"
-            exit 1
-        fi
+        apt install libmbedtls-dev -y
     fi
 }
 
@@ -104,19 +92,8 @@ install_ss(){
     if [ -f /usr/local/bin/ss-server ];then
         echo "\033[1;32mShadowsocks-libev already installed, skip.\033[0m"
     else
-        if [ ! -f $ss_file ];then
-            ss_url=$(wget -qO- https://api.github.com/repos/shadowsocks/shadowsocks-libev/releases/latest | grep browser_download_url | cut -f4 -d\")
-            wget $ss_url
-        fi
-        tar xf $ss_file
-        cd $(echo ${ss_file} | cut -f1-3 -d\.)
-        ./configure && make
-        make install
-        cd ..
-        if [ ! -f /usr/local/bin/ss-server ];then
-            echo "\033[1;31mFailed to install shadowsocks-libev.\033[0m"
-            exit 1
-        fi
+        apt install shadowsocks-libev -y
+        systemctl disable shadowsocks-libev.service
     fi
 }
 
@@ -148,17 +125,16 @@ ss_conf(){
     "server_port":443,
     "password":"$shadowsockspwd",
     "timeout":300,
-    "method":"aes-256-gcm",
-    "plugin":"v2ray-plugin",
-    "plugin_opts":"server;tls;cert=/etc/letsencrypt/live/$domain/fullchain.pem;key=/etc/letsencrypt/live/$domain/privkey.pem;host=$domain;loglevel=none"
+    "method":"chacha20-ietf-poly1305",
+    "mode":"tcp_and_udp"
 }
 EOF
-    cat >/lib/systemd/system/shadowsocks.service << EOF
+    cat >/lib/systemd/system/shadowv2.service << EOF
 [Unit]
 Description=Shadowsocks-libev Server Service
 After=network.target
 [Service]
-ExecStart=/usr/local/bin/ss-server -c /etc/shadowsocks-libev/config.json
+ExecStart=ss-server -c /etc/shadowsocks-libev/config.json --plugin v2ray-plugin --plugin-opts "server;tls;host=$domain;cert=/etc/letsencrypt/live/$domain/fullchain.pem;key=/etc/letsencrypt/live/$domain/privkey.pem;loglevel=none"
 ExecReload=/bin/kill -HUP \$MAINPID
 Restart=on-failure
 [Install]
@@ -172,10 +148,7 @@ get_cert(){
     else
         apt-get update
         if grep -Eqi "ubuntu" /etc/issue;then
-            apt-get install -y software-properties-common
-            add-apt-repository -y universe
-            add-apt-repository -y ppa:certbot/certbot
-            apt-get update
+            apt-get install -y certbot software-properties-common
         fi
         apt-get install -y certbot 
         certbot certonly --cert-name $domain -d $domain --standalone --agree-tos --register-unsafely-without-email
@@ -189,12 +162,12 @@ get_cert(){
 }
 
 start_ss(){
-    systemctl status shadowsocks > /dev/null 2>&1
+    systemctl status shadowv2 > /dev/null 2>&1
     if [ $? -eq 0 ]; then
-        systemctl stop shadowsocks
+        systemctl stop shadowv2.service
     fi
-    systemctl enable shadowsocks
-    systemctl start shadowsocks
+    systemctl enable shadowv2.service
+    systemctl start shadowv2.service
 }
 
 remove_files(){
