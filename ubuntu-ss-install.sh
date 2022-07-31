@@ -33,7 +33,7 @@ set_password(){
 set_domain(){
     echo "\033[1;34mPlease enter your domain:\033[0m"
     echo "If you don't have one, you can register one for free at:"
-    echo "https://my.freenom.com/clientarea.php"
+    echo "https://www.duckdns.org"
     read domain
     str=`echo $domain | grep '^\([a-zA-Z0-9_\-]\{1,\}\.\)\{1,\}[a-zA-Z]\{2,5\}'`
     while [ ! -n "${str}" ]
@@ -82,7 +82,10 @@ install_mbedtls(){
     if [ -f /usr/lib/libmbedtls.a ];then
         echo "\033[1;32mMbedTLS already installed, skip.\033[0m"
     else
-        apt install libmbedtls-dev -y
+        apt install -y libmbedtls-dev 
+        if [ ! -f /usr/lib/libmbedtls.a ];then
+            echo "\033[1;31mFailed to install MbedTLS.\033[0m"
+        fi
     fi
 }
 
@@ -94,6 +97,10 @@ install_ss(){
     else
         apt install shadowsocks-libev -y
         systemctl disable shadowsocks-libev.service
+        if [ ! -f /usr/local/bin/ss-server ];then
+            echo "\033[1;31mFailed to install shadowsocks-libev.\033[0m"
+            exit 1
+        fi
     fi
 }
 
@@ -129,7 +136,7 @@ ss_conf(){
     "mode":"tcp_and_udp"
 }
 EOF
-    cat >/lib/systemd/system/shadowv2.service << EOF
+    cat >/etc/systemd/system/shadowv2.service << EOF
 [Unit]
 Description=Shadowsocks-libev Server Service
 After=network.target
@@ -162,10 +169,12 @@ get_cert(){
 }
 
 start_ss(){
-    systemctl status shadowv2 > /dev/null 2>&1
+    systemctl status shadowv2.service > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         systemctl stop shadowv2.service
     fi
+    chmod 644 /etc/systemd/system/shadowv2.service
+    systemctl daemon-reload
     systemctl enable shadowv2.service
     systemctl start shadowv2.service
 }
