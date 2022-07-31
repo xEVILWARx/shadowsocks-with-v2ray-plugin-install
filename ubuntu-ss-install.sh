@@ -170,12 +170,12 @@ get_cert(){
 }
 
 start_ss(){
+    chmod 644 /etc/systemd/system/shadowv2.service
+    systemctl daemon-reload
     systemctl status shadowv2.service > /dev/null 2>&1
     if [ $? -eq 0 ]; then
         systemctl stop shadowv2.service
     fi
-    chmod 644 /etc/systemd/system/shadowv2.service
-    systemctl daemon-reload
     systemctl enable shadowv2.service
     systemctl start shadowv2.service
 }
