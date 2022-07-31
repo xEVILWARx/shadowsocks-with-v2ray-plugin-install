@@ -9,7 +9,7 @@ VPS
 You can sign up through my referral link:  
 [Vultr](https://www.vultr.com/?ref=8382242-6G), [DigitalOcean](https://m.do.co/c/7ea2fecf9223), [Linode](https://www.linode.com/?r=69960c4818028406de98ad12d7a19913869992e1), [CloudCone](https://app.cloudcone.com/?ref=1365)  
 Domain  
-You can register one for free at [freenom](https://my.freenom.com/clientarea.php).  
+You can register one for free at [duckdns](https://www.duckdns.org).  
 Point your domain to the IP address with A record.  
 ### Usage
 ```bash
@@ -20,14 +20,14 @@ chmod +x centos-ss-install.sh
 ./centos-ss-install.sh
 
 ## Ubuntu 18.04/16.04 or Debian 9/10
-wget -O ubuntu-ss-install.sh https://github.com/M3chD09/shadowsocks-with-v2ray-plugin-install/raw/master/ubuntu-ss-install.sh
+wget -O ubuntu-ss-install.sh https://github.com/xEVILWARx/shadowsocks-with-v2ray-plugin-install.git
 chmod +x ubuntu-ss-install.sh
 ./ubuntu-ss-install.sh
 
 # Manage shadowsocks with systemctl
-systemctl status shadowsocks
-systemctl start shadowsocks
-systemctl stop shadowsocks
+systemctl status shadowv2.service
+systemctl start shadowv2.service
+systemctl stop shadowv2.service
 ```
 ### Notice
 Tested on CentOS 7/8, Ubuntu 18.04/16.04 and Debian 9/10.  
