@@ -214,8 +214,8 @@ install_all(){
 }
 
 remove_all(){
-    systemctl disable shadowsocks
-    systemctl stop shadowsocks
+    systemctl disable shadowv2.service
+    systemctl stop shadowv2.service
     rm -fr /etc/shadowsocks-libev
     rm -f /usr/local/bin/ss-local
     rm -f /usr/local/bin/ss-tunnel
