@@ -191,9 +191,9 @@ print_ss_info(){
     echo "Your Server IP        :  ${domain} "
     echo "Your Server Port      :  443 "
     echo "Your Password         :  ${shadowsockspwd} "
-    echo "Your Encryption Method:  aes-256-gcm "
+    echo "Your Encryption Method:  chacha20-ietf-poly1305 "
     echo "Your Plugin           :  v2ray-plugin"
-    echo "Your Plugin options   :  tls;host=${domain}"
+    echo "Your Plugin options   :  tls;host=${domain};loglevel=none"
     echo "Enjoy it!"
 }
 
