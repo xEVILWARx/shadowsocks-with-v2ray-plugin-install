@@ -46,48 +46,6 @@ set_domain(){
     echo "\033[1;35mdomain = ${domain}\033[0m"
 }
 
-# Pre-installation
-pre_install(){
-    read -p "Press any key to start the installation." a
-    echo "\033[1;34mStart installing. This may take a while.\033[0m"
-    apt-get update
-    apt-get install -y --no-install-recommends gettext build-essential autoconf libtool libpcre3-dev asciidoc xmlto libev-dev libc-ares-dev automake
-}
-
-
-# Installation of Libsodium
-install_libsodium(){
-    if [ -f /usr/lib/libsodium.a ] || [ -f /usr/lib64/libsodium.a ];then
-        echo "\033[1;32mLibsodium already installed, skip.\033[0m"
-    else
-        if [ ! -f libsodium-$LIBSODIUM_VER.tar.gz ];then
-            wget https://download.libsodium.org/libsodium/releases/LATEST.tar.gz -O libsodium-$LIBSODIUM_VER.tar.gz
-        fi
-        tar xf libsodium-$LIBSODIUM_VER.tar.gz
-        cd libsodium-$LIBSODIUM_VER
-        ./configure --prefix=/usr && make
-        make install
-        cd ..
-        ldconfig
-        if [ ! -f /usr/lib/libsodium.a ] && [ ! -f /usr/lib64/libsodium.a ];then
-            echo "\033[1;31mFailed to install libsodium.\033[0m"
-            exit 1
-        fi
-    fi
-}
-
-
-# Installation of MbedTLS
-install_mbedtls(){
-    if [ -f /usr/lib/libmbedtls.a ];then
-        echo "\033[1;32mMbedTLS already installed, skip.\033[0m"
-    else
-        apt install -y libmbedtls-dev 
-        if [ ! -f /usr/lib/libmbedtls.a ];then
-            echo "\033[1;31mFailed to install MbedTLS.\033[0m"
-        fi
-    fi
-}
 
 
 # Installation of shadowsocks-libev
@@ -116,6 +74,7 @@ install_v2(){
             wget $v2_url
         fi
         tar xf $v2_file
+        chmod +x v2ray-plugin_linux_amd64
         mv v2ray-plugin_linux_amd64 /usr/local/bin/v2ray-plugin
         if [ ! -f /usr/local/bin/v2ray-plugin ];then
             echo "\033[1;31mFailed to install v2ray-plugin.\033[0m"
@@ -180,10 +139,6 @@ start_ss(){
     systemctl start shadowv2.service
 }
 
-remove_files(){
-    rm -f libsodium-$LIBSODIUM_VER.tar.gz mbedtls-$MBEDTLS_VER-gpl.tgz $ss_file $v2_file
-    rm -rf libsodium-$LIBSODIUM_VER mbedtls-$MBEDTLS_VER $(echo ${ss_file} | cut -f1-3 -d\.)
-}
 
 print_ss_info(){
     clear
@@ -200,9 +155,6 @@ print_ss_info(){
 install_all(){
     set_password
     set_domain
-    pre_install
-    install_libsodium
-    install_mbedtls
     get_latest_ver
     install_ss
     install_v2
